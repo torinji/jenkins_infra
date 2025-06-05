@@ -1,0 +1,6 @@
+configuration-as-code
+git
+workflow-aggregator
+agent
+command-launcher
+ssh-slaves

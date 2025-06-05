@@ -1,0 +1,45 @@
+jenkins:
+  systemMessage: "Jenkins configured automatically by JCasC"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  nodes:
+    - permanent:
+        name: "dev"
+        remoteFS: "/home/jenkins/agent"
+        numExecutors: 1
+        labelString: "dev docker python"
+        mode: NORMAL
+        retentionStrategy:
+          always: {}
+        launcher:
+          inbound: {}
+
+    - permanent:
+        name: "prod"
+        remoteFS: "/home/jenkins/agent"
+        numExecutors: 1
+        labelString: "prod"
+        mode: NORMAL
+        retentionStrategy:
+          always: {}
+        launcher:
+          inbound: {}
+
+unclassified:
+  location:
+    adminAddress: "admin@example.com"
+    url: "http://localhost:8080"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "/usr/bin/git"

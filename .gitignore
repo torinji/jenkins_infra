@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env
+
+# Docker
+*.log
+*.pid
+docker-compose.override.yml
+*.tar
+
+# Jenkins volumes
+jenkins_home/
+backups/
+
+# Registry certs
+registry/certs/
+registry_data/
+
+# Grafana and Prometheus volumes
+grafana_storage/
+prometheus/data/
+*.db
+
+# Secrets
+*.secret
+*.key
+*.crt
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+.idea/
+.vscode/
+
+# Makefile output
+*.out
+*.tmp
+*.lock
+*.cache

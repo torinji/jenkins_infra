@@ -1,0 +1,127 @@
+services:
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: jenkins-master
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backups/jenkins:/backups
+    networks:
+      - jenkins-net
+
+  jenkins-agent-dev:
+    build:
+      context: .
+      dockerfile: jenkins/agent/Dockerfile
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_AGENT_NAME=dev
+      - JENKINS_SECRET=7cc809b73cb757aeba4200324defd651d1e343140c6dbaee6ef671c6186dabbb
+      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "dev.local:172.18.0.1"
+    depends_on:
+      - jenkins
+    networks:
+      - jenkins-net
+  
+  node-exporter-dev:
+    image: prom/node-exporter
+    container_name: node-exporter-dev
+    pid: host
+    restart: always
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'  
+    networks:
+      - jenkins-net
+  
+  jenkins-agent-prod:
+    build:
+      context: .
+      dockerfile: jenkins/agent/Dockerfile
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_AGENT_NAME=prod
+      - JENKINS_SECRET=3ce2afd62178d48daed08ec9fd7c7c939c312c27f6d3ff69d65233eee941c188
+      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "prod.local:172.18.0.1"
+    depends_on:
+      - jenkins
+    networks:
+      - jenkins-net
+
+  node-exporter-prod:
+    image: prom/node-exporter
+    container_name: node-exporter-prod
+    pid: host
+    restart: always
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'
+    networks:
+      - jenkins-net
+
+  registry:
+    image: registry:2
+    container_name: registry
+    environment:
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - registry_data:/var/lib/registry
+      - ./registry/certs:/certs
+    networks:
+      - jenkins-net
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
+    networks:
+      - jenkins-net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      - GF_SERVER_ROOT_URL=http://grafana.localhost/
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/node-exporter.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    networks:
+      - jenkins-net
+
+volumes:
+  jenkins_home:
+  grafana_storage:
+  registry_data:
+
+networks:
+  jenkins-net:
