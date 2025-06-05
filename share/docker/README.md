@@ -100,6 +100,6 @@ make refresh
 
 ---
 
-## License
+## 📝 License
 
-MIT
+Anton Zherebtsov, torinji.san@gmail.com
