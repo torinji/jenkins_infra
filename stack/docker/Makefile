@@ -26,8 +26,8 @@ certs:
 
 refresh:
 	@echo "Fetching JNLP secrets from Jenkins at ${JENKINS_URL}..."
-	SECRET_DEV=$$(curl -su $(USERNAME):$(PASSWORD) $(JENKINS_URL)/computer/dev/slave-agent.jnlp | grep -oP '(?<=<argument>)[a-f0-9]{64}(?=</argument>)' | head -n 1); \
-	SECRET_PROD=$$(curl -su $(USERNAME):$(PASSWORD) $(JENKINS_URL)/computer/prod/slave-agent.jnlp | grep -oP '(?<=<argument>)[a-f0-9]{64}(?=</argument>)' | tail -n 1); \
+	SECRET_DEV=$$(curl -su admin:admin http://localhost:8080/computer/dev/slave-agent.jnlp | grep -oP '(?<=<argument>)[a-f0-9]{64}(?=</argument>)' | head -n 1); \
+	SECRET_PROD=$$(curl -su admin:admin http://localhost:8080/computer/prod/slave-agent.jnlp | grep -oP '(?<=<argument>)[a-f0-9]{64}(?=</argument>)' | tail -n 1); \
 	echo "Updating docker-compose.yml with new secrets..."; \
 	sed -i "s/\(JENKINS_SECRET=\)[a-f0-9]*/\1$${SECRET_DEV}/" docker-compose.yml; \
 	sed -i "/jenkins-agent-prod/,\$$s/\(JENKINS_SECRET=\)[a-f0-9]*/\1$${SECRET_PROD}/" docker-compose.yml; \

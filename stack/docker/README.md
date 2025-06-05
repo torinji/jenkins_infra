@@ -1,105 +1,128 @@
-# Jenkins CI/CD Platform with Monitoring and Private Registry
+# Jenkins CI/CD Stack with Monitoring and Private Registry
 
-## About the Project
+## About
 
-This project provides a fully isolated local CI/CD infrastructure using **Jenkins**, **Prometheus**, **Grafana**, and a **private Docker Registry**. It is designed for local development, testing, deployment, and monitoring.
+This folder contains the complete infrastructure setup for a local CI/CD platform. It runs **Jenkins**, **Prometheus**, **Grafana**, a private **Docker Registry**, and a reverse proxy (**nginx**) — all containerized and configured to work together inside a Vagrant-managed virtual machine.
 
-Key features include:
-
-- CI/CD pipelines via Jenkins.
-- Jenkins agents for `dev` and `prod` environments.
-- Local private Docker registry secured with TLS.
-- Real-time resource monitoring (CPU, memory) of agents and Jenkins using Prometheus and Grafana.
-- Dashboards and alerting rules for proactive issue detection.
-- One-command setup using `Makefile`.
+The platform is intended for local development, testing, and monitoring of applications through automated pipelines and preconfigured dashboards.
 
 ---
 
-## Architecture Overview
+## Components
 
-- `jenkins`: Jenkins master server.
-- `jenkins-agent-dev` / `jenkins-agent-prod`: Dedicated build agents with node-exporter installed.
-- `prometheus`: Collects and stores metrics.
-- `grafana`: Displays dashboards based on Prometheus data.
-- `registry`: Private Docker registry with HTTPS.
-- `Makefile`: Simplifies management and operations.
-
----
-
-## Prerequisites
-
-- Docker
-- Docker Compose
-- Make
-- OpenSSL
+* `jenkins`: Jenkins master server with predefined pipelines and Configuration-as-Code.
+* `jenkins-agent-dev` / `jenkins-agent-prod`: Build agents with `node-exporter`.
+* `prometheus`: Collects metrics from Jenkins and agents.
+* `grafana`: Dashboards for Jenkins jobs, agent metrics, and alerts.
+* `registry`: Local Docker registry secured with self-signed TLS.
+* `nginx`: Reverse proxy that routes traffic to services like `jenkins.local`, `grafana.local`, etc.
 
 ---
 
-## Quick Start
+## Prerequisites (inside the VM)
+
+Ensure these tools are available **inside the virtual machine** after running `vagrant ssh`:
+
+* Docker
+* Docker Compose
+* Make
+* OpenSSL (used for TLS certificate generation)
+
+They will be installed automatically via provisioning scripts during `vagrant up`.
+
+---
+
+## Setup Instructions
 
 ```bash
-# 1. Generate TLS certificates for Docker registry
+# Navigate to the project directory
+# If you're inside the VM (via `vagrant ssh`):
+cd /home/vagrant/stack/docker
+
+# If you're accessing it from your host machine (shared folder):
+cd /mnt/host_machine/stack/docker
+
+# 1. Generate TLS certificates for the private registry
 make certs
 
-# 2. Build and start all services
+# 2. Start the full stack
 make up
 
-# 3. Retrieve fresh JNLP secrets from Jenkins and update docker-compose
+# 3. Fetch fresh Jenkins agent secrets and restart agents
 make refresh
-
-# 4. Access interfaces:
-# Jenkins:    http://localhost:8080 (login: admin / password: admin)
-# Grafana:    http://localhost:3000 (login: admin / password: admin)
-# Prometheus: http://localhost:9090
-# Registry:   https://localhost:5000
 ```
+
+---
+
+## Accessing Services
+
+After setup, the following URLs become available via local DNS (make sure your host machine has the appropriate `/etc/hosts` entry):
+
+```
+127.0.0.1 jenkins.local grafana.local prometheus.local dev.local prod.local
+```
+
+| Service          | URL                                                | Default Credentials    |
+| ---------------- | -------------------------------------------------- | ---------------------- |
+| Jenkins          | [http://jenkins.local](http://jenkins.local)       | admin / admin          |
+| Grafana          | [http://grafana.local](http://grafana.local)       | admin / admin          |
+| Prometheus       | [http://prometheus.local](http://prometheus.local) | —                      |
+| Dev Application  | [http://dev.local](http://dev.local)               | —                      |
+| Prod Application | [http://prod.local](http://prod.local)             | —                      |
+| Registry         | [https://localhost:5000](https://localhost:5000)   | (uses self-signed TLS) |
 
 ---
 
 ## Makefile Commands
 
-| Command        | Description                                                        |
-|----------------|--------------------------------------------------------------------|
-| `make up`      | Build and start all Docker services                                |
-| `make certs`   | Generate self-signed TLS certificates for Docker registry          |
-| `make refresh` | Fetch latest Jenkins agent secrets and update Docker Compose file |
-| `make destroy` | Tear down all services, remove volumes and certificates            |
-| `make help`    | Show list of available Makefile commands                           |
+| Command        | Description                                                    |
+| -------------- | -------------------------------------------------------------- |
+| `make up`      | Build and start all Docker services                            |
+| `make certs`   | Generate self-signed TLS certificates for the private registry |
+| `make refresh` | Fetch latest Jenkins agent secrets and restart services        |
+| `make destroy` | Remove all containers, volumes, and generated certs            |
+| `make help`    | Show available commands                                        |
 
 ---
 
-## Monitoring and Alerting
+## Dashboards & Monitoring
 
-- **Prometheus** is configured to collect metrics from:
-  - Jenkins at `/prometheus`
-  - `node-exporter` running on `dev` and `prod` agents
+* **Prometheus** scrapes metrics from:
 
-- **Grafana** provides dashboards for:
-  - Node resource usage (CPU, Memory, Disk, etc.)
-  - Jenkins job statistics and health
+  * Jenkins (`/prometheus`)
+  * Node Exporter on each agent
 
-- **Alerting rules** include:
-  - High CPU or memory usage on agents
-  - Jenkins service downtime
+* **Grafana** displays:
 
----
+  * Jenkins performance and job status
+  * Resource usage (CPU, memory, disk) on build agents
 
-## Security
+* **Alerts** include:
 
-- Docker Registry uses TLS and is only accessible via HTTPS.
-- Credentials and secrets are stored in environment variables and injected via `docker-compose`.
-- Jenkins agents are authenticated using dynamically retrieved JNLP secrets.
+  * Jenkins master down
+  * High CPU/memory usage on agents
 
 ---
 
-## TODO
+## Security Notes
 
-- Integrate with Slack/Telegram for alert notifications
-- Automatic certificate renewal
-- CI pipeline for infrastructure updates
+* Registry is HTTPS-only (uses self-signed certs)
+* JNLP secrets are dynamically pulled for Jenkins agents
+* Passwords are stored via environment variables (`.env`)
+
+---
+
+## Future Enhancements
+
+* Push CI/CD artifacts to private registry
+* Add auto-cleanup jobs for old images
+* Integrate Slack or Telegram for Prometheus alerts
+* Replace self-signed certs with Let's Encrypt (via nginx)
+* Add cAdvisor for container-level monitoring
+* Support for GitHub webhook triggers in Jenkins
 
 ---
 
 ## 📝 License
 
-Anton Zherebtsov, torinji.san@gmail.com
+Anton Zherebtsov, [torinji.san@gmail.com](mailto:torinji.san@gmail.com)
