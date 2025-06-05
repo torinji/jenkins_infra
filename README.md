@@ -4,7 +4,7 @@ This project provisions a fully automated CI/CD and monitoring stack using Vagra
 
 The infrastructure is containerized and runs inside a Vagrant-powered VirtualBox virtual machine. All services are deployed within this VM, and infrastructure setup must be completed from inside it.
 
-To launch the full stack, SSH into the VM and follow [`the instructions`](stack/docker/README.md).
+To launch the full stack, SSH into the VM and follow [the instructions](stack/docker/README.md).
 
 If you'd like to run the stack directly on your local machine without Vagrant, simply copy the `stack/docker` directory and place your Jenkins pipelines in `stack/docker/jenkins/jobscripts`.
 
@@ -38,11 +38,21 @@ To access services using hostnames like `jenkins.local` or `grafana.local`, add 
 
 This will enable clean URLs for Jenkins, Grafana, Prometheus, and your dev/prod application frontends.
 
-* Jenkins: [http:/jenkins.local](http://jenkins.local) (admin / admin)
-* Prometheus: [http://grafana.local](http://grafana.local)
-* Grafana: [http://prometheus.local](http://prometheus.local) (admin / admin)
+* Jenkins: [http://jenkins.local](http://jenkins.local) (admin / admin)
+* Prometheus: [http://prometheus.local](http://prometheus.local)
+* Grafana: [http://grafana.local](http://grafana.local) (admin / admin)
 * Prod application: [http://prod.local](http://prod.local)
 * Dev application: [http://dev.local](http://dev.local)
+
+## Screenshots
+
+### Jenkins Dashboard
+
+![Jenkins Dashboard](images/screenshots/jenkins.png)
+
+### Grafana Dashboards
+
+![Grafana Dashboards](images/screenshots/grafana.png)
 
 ## Project Structure
 
@@ -105,6 +115,15 @@ This will enable clean URLs for Jenkins, Grafana, Prometheus, and your dev/prod 
             prod.conf
             prometheus.conf
 ```
+
+## Future Improvements
+
+* Integrate a build artifact repository (e.g., Nexus or Artifactory)
+* Add GitHub Webhook integration for Jenkins jobs
+* Configure email/Slack alert notifications from Prometheus
+* Add HTTPS support with self-signed or Let's Encrypt certificates
+* Introduce automated tests for deployed services
+* Extend monitoring to include container metrics via cAdvisor
 
 ## 📝 License
 
