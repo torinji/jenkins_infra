@@ -6,7 +6,7 @@ The infrastructure is containerized and runs inside a Vagrant-powered VirtualBox
 
 To launch the full stack, SSH into the VM and follow [the instructions](stack/docker/README.md).
 
-If you'd like to run the stack directly on your local machine without Vagrant, simply copy the `stack/docker` directory and place your Jenkins pipelines in `stack/docker/jenkins/jobscripts`.
+If you'd like to run the stack directly on your local machine without Vagrant, go to `stack/docker` directory and follow [the instructions](stack/docker/README.md).
 
 ## Features
 
