@@ -36,11 +36,10 @@ They will be installed automatically via provisioning scripts during `vagrant up
 
 ```bash
 # Navigate to the project directory
-# If you're inside the VM (via `vagrant ssh`):
-cd /home/vagrant/stack/docker
+# The main script for deploying the structure is located(regarding git repository): stack/docker
 
-# If you're accessing it from your host machine (shared folder):
-cd /mnt/host_machine/stack/docker
+# if you used my vagrant script for deployment, go to (it from your host machine shared folder):
+cd /mnt/host_machine/docker
 
 # 1. Generate TLS certificates for the private registry
 make certs
